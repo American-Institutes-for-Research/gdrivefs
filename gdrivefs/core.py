@@ -126,7 +126,7 @@ class GoogleDriveFileSystem(AbstractFileSystem):
         meta = {"name": path.rstrip("/").rsplit("/", 1)[-1],
                 'mimeType': DIR_MIME_TYPE,
                 "parents": [parent_id]}
-        self.service.create(body=meta).execute()
+        self.service.create(body=meta, supportsAllDrives=True).execute()
         self.invalidate_cache(self._parent(path))
 
     def makedirs(self, path, exist_ok=True):
@@ -140,7 +140,7 @@ class GoogleDriveFileSystem(AbstractFileSystem):
         self.mkdir(path, create_parents=False)
 
     def _delete(self, file_id):
-        self.service.delete(fileId=file_id).execute()
+        self.service.delete(fileId=file_id, supportsAllDrives=True).execute()
 
     def rm(self, path, recursive=True, maxdepth=None):
         if recursive is False and self.isdir(path) and self.ls(path):
@@ -156,7 +156,7 @@ class GoogleDriveFileSystem(AbstractFileSystem):
 
     def _info_by_id(self, file_id, path_prefix=None):
         response = self.service.get(fileId=file_id, fields=fields,
-                                    ).execute()
+                                    supportsAllDrives=True).execute()
         return _finfo_from_response(response, path_prefix)
 
     def export(self, path, mime_type):
@@ -200,7 +200,9 @@ class GoogleDriveFileSystem(AbstractFileSystem):
         while True:
             response = self.service.list(q=query,
                                          spaces=self.spaces, fields=afields,
-                                         pageToken=page_token).execute()
+                                         pageToken=page_token,
+                                         supportsAllDrives=True,
+                                         includeItemsFromAllDrives=True).execute()
             for f in response.get('files', []):
                 all_files.append(_finfo_from_response(f, path_prefix))
             more = response.get('incompleteSearch', False)
