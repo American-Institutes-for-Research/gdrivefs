@@ -356,8 +356,9 @@ class GoogleDriveFile(AbstractBufferedFile):
         # TODO : this creates a new file. If the file exists, you should
         #   update it by getting the ID and using PATCH, else you get two
         #   identically-named files
+        # Use supportsAllDrive=true to enable writes to Shared Drives
         r = req("https://www.googleapis.com/upload/drive/v3/files"
-                "?uploadType=resumable", method='POST',
+                "?uploadType=resumable&supportsSharedDrives=true", method='POST',
                 headers=head, body=body)
         head = r[0]
         assert int(head['status']) < 400, "Init upload failed"
